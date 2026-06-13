@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MU Founder Control Tower</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D1117;
+  --paper:#E8E3D9;
+  --paper2:#D9D3C8;
+  --paper3:#CAC3B5;
+  --amber:#E8A020;
+  --amber2:#C4841A;
+  --red:#C0392B;
+  --green:#1A7A4A;
+  --blue:#2E6DA4;
+  --muted:#8A8278;
+  --border:#C8C2B8;
+  --border2:#B8B2A8;
+  --ink2:#1E252E;
+  --ink3:#2A3340;
+}
+html,body{height:100%;background:var(--ink);font-family:'Inter',sans-serif;color:var(--paper);overflow:hidden}
+
+/* GRID LAYOUT */
+#app{
+  display:grid;
+  grid-template-rows:64px 1fr 180px;
+  grid-template-columns:1fr;
+  height:100vh;
+  gap:0;
+}
+
+/* TOPBAR */
+#topbar{
+  background:var(--ink2);
+  border-bottom:1px solid rgba(232,227,217,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  flex-shrink:0;
+}
+.tb-left{display:flex;align-items:center;gap:16px}
+.tb-logo{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:13px;font-weight:600;
+  color:var(--paper);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.tb-sep{width:1px;height:20px;background:rgba(232,227,217,0.15)}
+.tb-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:400;color:var(--muted)}
+.tb-right{display:flex;align-items:center;gap:14px}
+.tb-time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.crisis-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(192,57,43,0.15);
+  border:1px solid rgba(192,57,43,0.4);
+  border-radius:3px;padding:4px 10px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;
+  color:var(--red);letter-spacing:.06em;text-transform:uppercase;
+}
+.crisis-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* MAIN CONTENT */
+#body{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  gap:0;
+  overflow:hidden;
+}
+
+/* LEFT PANEL - Health Ring */
+#left-panel{
+  background:var(--ink2);
+  border-right:1px solid rgba(232,227,217,0.06);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:28px 24px;
+  position:relative;
+}
+.ring-label-top{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  color:var(--muted);
+  letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:20px;text-align:center;
+}
+#ring-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
+#ring-svg{width:200px;height:200px}
+.ring-center{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+}
+.ring-score{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:48px;font-weight:700;
+  line-height:1;
+  color:var(--amber);
+}
+.ring-max{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--muted);
+  margin-top:2px;
+}
+.ring-status{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  margin-top:4px;
+}
+.ring-breakdown{
+  width:100%;margin-top:24px;
+}
+.rb-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;
+}
+.rb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.rb-name{font-family:'Inter',sans-serif;font-size:11px;color:var(--muted);flex:1}
+.rb-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500}
+.rb-bar-wrap{width:60px;height:3px;background:rgba(232,227,217,0.1);border-radius:2px;flex-shrink:0}
+.rb-bar{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* RIGHT PANEL - Metrics Grid */
+#right-panel{
+  overflow-y:auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:14px;
+  align-content:start;
+}
+#right-panel::-webkit-scrollbar{width:3px}
+#right-panel::-webkit-scrollbar-thumb{background:rgba(232,227,217,0.1)}
+
+/* METRIC CARDS */
+.metric-card{
+  background:var(--ink2);
+  border:1px solid rgba(232,227,217,0.06);
+  border-radius:4px;
+  padding:18px 20px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color .2s;
+}
+.metric-card:hover{border-color:rgba(232,227,217,0.15)}
+.metric-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.metric-card.amber::before{background:var(--amber)}
+.metric-card.red::before{background:var(--red)}
+.metric-card.green::before{background:var(--green)}
+.metric-card.blue::before{background:var(--blue)}
+.metric-card.warn::before{background:#B8860B}
+
+.mc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.mc-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.mc-status{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;
+}
+.mc-status.ok{color:var(--green);background:rgba(26,122,74,0.15);border:1px solid rgba(26,122,74,0.3)}
+.mc-status.warn{color:var(--amber);background:rgba(232,160,32,0.12);border:1px solid rgba(232,160,32,0.3)}
+.mc-status.critical{color:var(--red);background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3)}
+
+.mc-number{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:36px;font-weight:700;
+  line-height:1;
+  margin-bottom:4px;
+}
+.metric-card.amber .mc-number{color:var(--amber)}
+.metric-card.red .mc-number{color:var(--red)}
+.metric-card.green .mc-number{color:var(--green)}
+.metric-card.blue .mc-number{color:var(--blue)}
+.metric-card.warn .mc-number{color:#D4A017}
+
+.mc-sub{font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.4}
+
+/* Sparkline */
+.mc-spark{
+  margin-top:auto;
+  height:40px;
+  position:relative;
+}
+.spark-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px;color:var(--muted);
+  margin-bottom:4px;
+  letter-spacing:.06em;text-transform:uppercase;
+}
+svg.sparkline{overflow:visible}
+
+.mc-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(232,227,217,0.06);
+}
+.mc-trigger{font-size:10px;color:var(--muted);line-height:1.4;flex:1}
+.mc-trigger span{color:var(--paper);font-weight:500}
+.mc-trend{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;font-weight:600;
+  flex-shrink:0;margin-left:12px;
+}
+.mc-trend.up{color:var(--green)}.mc-trend.dn{color:var(--red)}.mc-trend.flat{color:var(--muted)}
+
+/* BOTTOM - AI */
+#bottom{
+  background:var(--ink2);
+  border-top:1px solid rgba(232,227,217,0.08);
+  display:flex;
+  align-items:stretch;
+  gap:0;
+}
+#ai-panel{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:16px 24px;
+  border-right:1px solid rgba(232,227,217,0.06);
+}
+.ai-top{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:12px;
+}
+.ai-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:500;
+  color:var(--muted);letter-spacing:.12em;text-transform:uppercase;
+}
+.ai-input-row{display:flex;gap:8px;flex:1}
+#ai-input{
+  flex:1;
+  background:var(--ink3);
+  border:1px solid rgba(232,227,217,0.1);
+  border-radius:3px;
+  padding:9px 14px;
+  color:var(--paper);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  outline:none;
+  transition:border-color .15s;
+}
+#ai-input::placeholder{color:var(--muted)}
+#ai-input:focus{border-color:rgba(232,160,32,0.5)}
+#ai-send{
+  background:var(--amber);color:var(--ink);
+  border:none;border-radius:3px;
+  padding:9px 18px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:600;
+  cursor:pointer;flex-shrink:0;
+  transition:opacity .15s;
+}
+#ai-send:disabled{opacity:.4;cursor:not-allowed}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{
+  background:var(--ink3);
+  border:1px solid rgba(232,227,217,0.1);
+  border-radius:2px;padding:4px 10px;
+  font-family:'IBM Plex Mono',monospace;font-size:9px;
+  color:var(--muted);cursor:pointer;
+  transition:all .12s;letter-spacing:.03em;
+}
+.chip:hover{border-color:rgba(232,160,32,0.4);color:var(--amber)}
+
+#ai-response-panel{
+  width:380px;flex-shrink:0;
+  padding:16px 20px;
+  overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+#ai-response-panel::-webkit-scrollbar{width:2px}
+.resp-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:8px;
+}
+#ai-resp-text{
+  font-size:11.5px;color:var(--paper2);
+  line-height:1.7;white-space:pre-wrap;
+  font-family:'Inter',sans-serif;
+}
+
+/* Modal overlay */
+#modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(13,17,23,0.85);
+  z-index:100;
+  align-items:center;justify-content:center;
+}
+#modal.open{display:flex}
+#modal-box{
+  background:var(--ink2);
+  border:1px solid rgba(232,227,217,0.12);
+  border-radius:4px;
+  width:580px;max-height:80vh;overflow-y:auto;
+  padding:28px 32px;
+}
+#modal-box::-webkit-scrollbar{width:3px}
+.modal-close{
+  float:right;background:none;border:none;
+  color:var(--muted);cursor:pointer;font-size:18px;
+  font-family:'IBM Plex Mono',monospace;
+}
+.modal-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:18px;font-weight:700;
+  color:var(--paper);margin-bottom:4px;
+}
+.modal-sub{font-size:11px;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
+.modal-section{margin-bottom:18px}
+.modal-section-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;font-weight:600;
+  color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:8px;
+  padding-bottom:6px;
+  border-bottom:1px solid rgba(232,227,217,0.08);
+}
+.modal-body{font-size:12px;color:var(--paper2);line-height:1.7}
+.modal-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(232,227,217,0.04)}
+.modal-row:last-child{border-bottom:none}
+.modal-row-label{font-size:11px;color:var(--muted)}
+.modal-row-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--paper)}
+.modal-alert{
+  border-radius:3px;padding:10px 14px;margin-bottom:8px;
+  font-size:11px;line-height:1.5;
+}
+.modal-alert.red{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.25);color:var(--paper2)}
+.modal-alert.amber{background:rgba(232,160,32,0.1);border:1px solid rgba(232,160,32,0.25);color:var(--paper2)}
+.modal-alert.green{background:rgba(26,122,74,0.1);border:1px solid rgba(26,122,74,0.25);color:var(--paper2)}
+.modal-alert strong{font-weight:600}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-left">
+    <div class="tb-logo">Masters' Union</div>
+    <div class="tb-sep"></div>
+    <div class="tb-title">Founder Control Tower &nbsp;·&nbsp; Institutional Health OS</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-time" id="live-time">—</div>
+    <div class="crisis-pill"><div class="crisis-dot"></div>Placement pressure active</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div id="body">
+
+  <!-- LEFT: HEALTH RING -->
+  <div id="left-panel">
+    <div class="ring-label-top">Institutional Health Score</div>
+    <div id="ring-wrap">
+      <svg id="ring-svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(232,227,217,0.06)" stroke-width="14"/>
+        <circle id="ring-track" cx="100" cy="100" r="82" fill="none"
+          stroke="var(--amber)" stroke-width="14"
+          stroke-linecap="round"
+          stroke-dasharray="515.2"
+          stroke-dashoffset="515.2"
+          transform="rotate(-90 100 100)"
+          style="transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"/>
+        <circle id="ring-track2" cx="100" cy="100" r="62" fill="none"
+          stroke="rgba(232,160,32,0.08)" stroke-width="6"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-score" id="ring-score">—</div>
+        <div class="ring-max">/ 100</div>
+        <div class="ring-status" id="ring-status" style="color:var(--amber)">Loading</div>
+      </div>
+    </div>
+
+    <div class="ring-breakdown" id="ring-breakdown"></div>
+  </div>
+
+  <!-- RIGHT: METRIC CARDS -->
+  <div id="right-panel">
+
+    <!-- Evidence Credibility -->
+    <div class="metric-card amber" onclick="openModal('evidence')">
+      <div class="mc-top">
+        <div class="mc-label">Evidence Credibility</div>
+        <div class="mc-status warn">Partial</div>
+      </div>
+      <div class="mc-number">41</div>
+      <div class="mc-sub">of 100 · Placement audited, career trajectory self-reported</div>
+      <div class="mc-spark">
+        <div class="spark-label">12-week trend</div>
+        <svg class="sparkline" width="100%" height="28" id="spark-evidence"></svg>
+      </div>
+      <div class="mc-footer">
+        <div class="mc-trigger">Trigger at <span>below 35</span>: immediate audit review</div>
+        <div class="mc-trend dn">↓ 3pts</div>
+      </div>
+    </div>
+
+    <!-- Recruiter Health -->
+    <div class="metric-card green" onclick="openModal('recruiter')">
+      <div class="mc-top">
+        <div class="mc-label">Recruiter Health</div>
+        <div class="mc-status warn">At Risk</div>
+      </div>
+      <div class="mc-number">6.8</div>
+      <div class="mc-sub">of 10 · 19 companies cold · 24 at risk · 38 active</div>
+      <div class="mc-spark">
+        <div class="spark-label">12-week trend</div>
+        <svg class="sparkline" width="100%" height="28" id="spark-recruiter"></svg>
+      </div>
+      <div class="mc-footer">
+        <div class="mc-trigger">Trigger at <span>below 5.5</span>: senior call within 5 days</div>
+        <div class="mc-trend dn">↓ 0.4</div>
+      </div>
+    </div>
+
+    <!-- Career Trajectory -->
+    <div class="metric-card blue" onclick="openModal('trajectory')">
+      <div class="mc-top">
+        <div class="mc-label">Career Trajectory Index</div>
+        <div class="mc-status ok">Strong</div>
+      </div>
+      <div class="mc-number">1.48×</div>
+      <div class="mc-sub">Fees at 36 months · Target 1.5× · 80% cohort 2021 promoted</div>
+      <div class="mc-spark">
+        <div class="spark-label">12-week trend</div>
+        <svg class="sparkline" width="100%" height="28" id="spark-trajectory"></svg>
+      </div>
+      <div class="mc-footer">
+        <div class="mc-trigger">Trigger at <span>below 1.3×</span>: curriculum review before admissions</div>
+        <div class="mc-trend up">↑ 0.06×</div>
+      </div>
+    </div>
+
+    <!-- Founder Dependency -->
+    <div class="metric-card red" onclick="openModal('founder')">
+      <div class="mc-top">
+        <div class="mc-label">Founder Dependency</div>
+        <div class="mc-status critical">High</div>
+      </div>
+      <div class="mc-number">58%</div>
+      <div class="mc-sub">of decisions require founder involvement · Target below 20%</div>
+      <div class="mc-spark">
+        <div class="spark-label">12-week trend</div>
+        <svg class="sparkline" width="100%" height="28" id="spark-founder"></svg>
+      </div>
+      <div class="mc-footer">
+        <div class="mc-trigger">Trigger at <span>above 50% for 2 months</span>: org design review</div>
+        <div class="mc-trend dn">↑ worse</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM: AI COMMAND BAR -->
+<div id="bottom">
+  <div id="ai-panel">
+    <div class="ai-top">
+      <div class="ai-label">AI Analyst &nbsp;·&nbsp; Powered by Claude</div>
+    </div>
+    <div class="ai-input-row">
+      <input id="ai-input" placeholder="Ask anything about institutional health..." onkeydown="if(event.key==='Enter')ask()">
+      <button id="ai-send" onclick="ask()">Run</button>
+    </div>
+    <div class="chip-row">
+      <div class="chip" onclick="qa('What is the single highest priority intervention this week?')">Top priority this week</div>
+      <div class="chip" onclick="qa('How do we reduce founder dependency from 58% to 20% in 6 months?')">Fix founder dependency</div>
+      <div class="chip" onclick="qa('Which 5 cold recruiters should we re-engage first and how?')">Re-engage cold recruiters</div>
+      <div class="chip" onclick="qa('What would it cost to get career trajectory data independently verified?')">Cost of verification</div>
+      <div class="chip" onclick="qa('If Pratham spends 60% of his time on Tetr, what breaks first at MU?')">Tetr risk scenario</div>
+    </div>
+  </div>
+  <div id="ai-response-panel">
+    <div class="resp-label">Analysis output</div>
+    <div id="ai-resp-text" style="color:var(--muted);font-style:italic">Select a quick query or type your own question above.</div>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div id="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modal-title">—</div>
+    <div class="modal-sub" id="modal-sub">—</div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// Live time
+function updateTime(){
+  const now=new Date();
+  document.getElementById('live-time').textContent=
+    now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+
+    ' · '+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+setInterval(updateTime,1000);updateTime();
+
+// Health ring animation
+const SCORE=61;
+const CIRC=2*Math.PI*82;
+setTimeout(()=>{
+  const offset=CIRC*(1-SCORE/100);
+  document.getElementById('ring-track').style.strokeDashoffset=offset;
+  document.getElementById('ring-score').textContent=SCORE;
+  const st=document.getElementById('ring-status');
+  if(SCORE>=75){st.textContent='Healthy';st.style.color='var(--green)'}
+  else if(SCORE>=55){st.textContent='Under Pressure';st.style.color='var(--amber)'}
+  else{st.textContent='At Risk';st.style.color='var(--red)'}
+},200);
+
+// Ring breakdown
+const breakdown=[
+  {name:'Evidence Credibility',val:41,max:100,color:'var(--amber)'},
+  {name:'Recruiter Health',val:68,max:100,color:'#2E6DA4'},
+  {name:'Career Trajectory',val:82,max:100,color:'var(--green)'},
+  {name:'Founder Dependency',val:42,max:100,color:'var(--red)',invert:true},
+  {name:'Institutional Moat',val:54,max:100,color:'#8B7355'},
+];
+document.getElementById('ring-breakdown').innerHTML=breakdown.map(b=>{
+  const pct=b.invert?(100-b.val):b.val;
+  return `<div class="rb-row">
+    <div class="rb-dot" style="background:${b.color}"></div>
+    <div class="rb-name">${b.name}</div>
+    <div class="rb-bar-wrap"><div class="rb-bar" style="width:${pct}%;background:${b.color}"></div></div>
+    <div class="rb-val" style="color:${b.color}">${b.val}</div>
+  </div>`;
+}).join('');
+
+// Sparklines
+function drawSpark(id, data, color, filled=false){
+  const svg=document.getElementById(id);
+  if(!svg)return;
+  const w=svg.clientWidth||240;const h=28;
+  const min=Math.min(...data);const max=Math.max(...data);
+  const range=max-min||1;
+  const pts=data.map((v,i)=>{
+    const x=(i/(data.length-1))*w;
+    const y=h-((v-min)/range)*(h-4)-2;
+    return `${x},${y}`;
+  });
+  const poly=pts.join(' ');
+  let html=``;
+  if(filled){
+    const first=pts[0].split(',');const last=pts[pts.length-1].split(',');
+    html+=`<polygon points="${poly} ${last[0]},${h} 0,${h}" fill="${color}" opacity="0.08"/>`;
+  }
+  html+=`<polyline points="${poly}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // last dot
+  const lastPt=pts[pts.length-1].split(',');
+  html+=`<circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="2.5" fill="${color}"/>`;
+  svg.innerHTML=html;
+}
+
+const sparks={
+  'spark-evidence':{data:[48,46,45,44,43,45,43,42,41,40,41,41],color:'#E8A020'},
+  'spark-recruiter':{data:[7.8,7.5,7.2,7.0,7.1,6.9,7.0,6.8,6.7,6.8,6.9,6.8],color:'#2E6DA4'},
+  'spark-trajectory':{data:[1.30,1.32,1.35,1.36,1.38,1.40,1.42,1.43,1.44,1.46,1.47,1.48],color:'var(--green)'},
+  'spark-founder':{data:[42,44,46,48,50,52,54,55,56,57,58,58],color:'var(--red)'},
+};
+setTimeout(()=>{
+  Object.entries(sparks).forEach(([id,cfg])=>drawSpark(id,cfg.data,cfg.color,true));
+},300);
+
+// Modal data
+const modals={
+  evidence:{
+    title:'Evidence Credibility Score',
+    sub:'Formula: % verified alumni data (50%) + recruiter survey response rate (25%) + media sentiment ratio (25%)',
+    content:`
+      <div class="modal-section">
+        <div class="modal-section-title">Current State</div>
+        <div class="modal-row"><div class="modal-row-label">Placement data (Brickworks audited)</div><div class="modal-row-val" style="color:var(--green)">Verified ✓</div></div>
+        <div class="modal-row"><div class="modal-row-label">Alumni career trajectory (1–5yr)</div><div class="modal-row-val" style="color:var(--red)">Self-reported ✗</div></div>
+        <div class="modal-row"><div class="modal-row-label">Recruiter satisfaction data</div><div class="modal-row-val" style="color:var(--red)">Not collected ✗</div></div>
+        <div class="modal-row"><div class="modal-row-label">Faculty impact mapping</div><div class="modal-row-val" style="color:var(--red)">Not published ✗</div></div>
+        <div class="modal-row"><div class="modal-row-label">Venture outcome tracking</div><div class="modal-row-val" style="color:var(--amber)">Partial</div></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Why This Matters</div>
+        <div class="modal-body">The 36-month alumni salary data shows median above ₹40L for 2021 cohort. This is MU's strongest ROI argument. It is currently labelled "self-reported and unverified" on the website. A Big Four verification of this single dataset would move this score from 41 to approximately 68 within one audit cycle.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Recommended Actions</div>
+        <div class="modal-alert amber"><strong>High impact, low cost:</strong> Commission Deloitte or EY to verify 2021 and 2022 cohort career progression data. Estimated cost: ₹8–12L. Timeline: 6–8 weeks. Moves the needle more than any marketing spend.</div>
+        <div class="modal-alert amber"><strong>Quick win:</strong> Launch post-drive recruiter NPS survey immediately. Even unpublished data starts building the evidence baseline. 3 questions, automated, takes 2 minutes per recruiter.</div>
+      </div>
+    `
+  },
+  recruiter:{
+    title:'Recruiter Health Score',
+    sub:'Formula: Average post-drive NPS weighted by offer volume · Target: 7.5+ · Crisis: below 5.5',
+    content:`
+      <div class="modal-section">
+        <div class="modal-section-title">Pipeline Breakdown</div>
+        <div class="modal-row"><div class="modal-row-label">Active (drove last 30 days)</div><div class="modal-row-val" style="color:var(--green)">38 companies</div></div>
+        <div class="modal-row"><div class="modal-row-label">At risk (45+ days no contact)</div><div class="modal-row-val" style="color:var(--amber)">24 companies</div></div>
+        <div class="modal-row"><div class="modal-row-label">Cold (90+ days no activity)</div><div class="modal-row-val" style="color:var(--red)">19 companies</div></div>
+        <div class="modal-row"><div class="modal-row-label">New this cycle</div><div class="modal-row-val">55 companies</div></div>
+        <div class="modal-row"><div class="modal-row-label">Consistent across 3+ years</div><div class="modal-row-val" style="color:var(--green)">12 companies</div></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">The Churn Signal</div>
+        <div class="modal-body">55 new recruiters added this cycle while 19 went cold. This is not growth — it is churn. Every cold recruiter represents a relationship that MU built and did not maintain. The cost of re-acquisition is 4–5x the cost of retention. The 12 consistent recruiters deserve named relationship managers and formal multi-year agreements immediately.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Recommended Actions</div>
+        <div class="modal-alert red"><strong>Urgent:</strong> Identify the 5 highest-value cold companies (by historical CTC and offer volume). Assign a senior team member to each. Target re-engagement call within 10 working days.</div>
+        <div class="modal-alert amber"><strong>Structural fix:</strong> Formalise top 30 recruiter relationships as written multi-year partnerships with named MU owners. When the relationship manager changes, structured handover. No institutional memory should sit in one person's head.</div>
+      </div>
+    `
+  },
+  trajectory:{
+    title:'Career Trajectory Index',
+    sub:'Formula: Median alumni salary at 36 months as multiple of fees paid · Target: 1.5× · Crisis: below 1.3×',
+    content:`
+      <div class="modal-section">
+        <div class="modal-section-title">Cohort Performance</div>
+        <div class="modal-row"><div class="modal-row-label">2021 cohort — year 4–5 salary</div><div class="modal-row-val" style="color:var(--green)">₹44L+ median</div></div>
+        <div class="modal-row"><div class="modal-row-label">2021 cohort — promotion rate</div><div class="modal-row-val" style="color:var(--green)">80% by year 3</div></div>
+        <div class="modal-row"><div class="modal-row-label">Alumni earning ₹40–60L</div><div class="modal-row-val">125+ people</div></div>
+        <div class="modal-row"><div class="modal-row-label">Alumni earning ₹60L+</div><div class="modal-row-val">40 people</div></div>
+        <div class="modal-row"><div class="modal-row-label">Alumni turned entrepreneurs</div><div class="modal-row-val" style="color:var(--amber)">80 people</div></div>
+        <div class="modal-row"><div class="modal-row-label">Data verification status</div><div class="modal-row-val" style="color:var(--red)">Self-reported</div></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">The Hidden Opportunity</div>
+        <div class="modal-body">This is MU's strongest ROI argument and it is almost invisible. At placement, median CTC is ₹27.8L against ₹29L fees — a barely-positive first-year calculation. At 36 months, the same cohort is at ₹44L median and climbing. The ROI story is genuinely compelling. It is just being told at the wrong moment with unverified data.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Recommended Actions</div>
+        <div class="modal-alert green"><strong>Highest leverage move:</strong> Get 2021 and 2022 cohort salary data independently verified. Publish a "MU Career Audit" alongside the placement report every year. This is the single intervention that most changes how serious applicants evaluate MU.</div>
+        <div class="modal-alert amber"><strong>Marketing shift:</strong> Stop leading with mean placement CTC. Lead with verified 36-month median. The number is better and more honest. Every applicant who does the real math is currently finding a misleadingly weak argument.</div>
+      </div>
+    `
+  },
+  founder:{
+    title:'Founder Dependency Score',
+    sub:'Formula: % of critical decisions requiring direct founder involvement · Target: below 20% · Crisis: above 50%',
+    content:`
+      <div class="modal-section">
+        <div class="modal-section-title">Current Dependency Map</div>
+        <div class="modal-row"><div class="modal-row-label">Placement crisis management</div><div class="modal-row-val" style="color:var(--red)">Founder-led</div></div>
+        <div class="modal-row"><div class="modal-row-label">Senior recruiter relationships</div><div class="modal-row-val" style="color:var(--red)">Founder-owned</div></div>
+        <div class="modal-row"><div class="modal-row-label">Key faculty relationships</div><div class="modal-row-val" style="color:var(--amber)">Primarily founder</div></div>
+        <div class="modal-row"><div class="modal-row-label">Media and PR response</div><div class="modal-row-val" style="color:var(--amber)">Primarily founder</div></div>
+        <div class="modal-row"><div class="modal-row-label">Tetr College time allocation</div><div class="modal-row-val" style="color:var(--red)">Growing</div></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">The Structural Risk</div>
+        <div class="modal-body">Pratham is now running Masters' Union and Tetr College of Business simultaneously. This is not a criticism. It is a structural fact. The question is not whether he should be less involved — it is what happens to each founder-dependent function when he is unavailable, and whether MU has a named answer for each one. Currently it does not.</div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Recommended Actions</div>
+        <div class="modal-alert red"><strong>Urgent:</strong> Map every function where Pratham is the primary decision-maker. Assign a named deputy for each. Set a 90-day target to transfer ownership of at least 3 major functions.</div>
+        <div class="modal-alert amber"><strong>Metric:</strong> Track founder hours per placement season quarterly. Set a public internal target of 25% reduction every 6 months. Make it a KPI for the Founder's Office team, not just a aspiration.</div>
+        <div class="modal-alert green"><strong>Long-term:</strong> Build an operating playbook documenting every intervention Pratham makes during a crisis. Turn instinct into protocol. The institution should be able to run any playbook without him present.</div>
+      </div>
+    `
+  }
+};
+
+function openModal(key){
+  const m=modals[key];if(!m)return;
+  document.getElementById('modal-title').textContent=m.title;
+  document.getElementById('modal-sub').textContent=m.sub;
+  document.getElementById('modal-content').innerHTML=m.content;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+// AI
+async function ask(){
+  const q=document.getElementById('ai-input').value.trim();
+  if(!q)return;
+  const btn=document.getElementById('ai-send');
+  const resp=document.getElementById('ai-resp-text');
+  btn.disabled=true;btn.textContent='···';
+  resp.style.color='var(--muted)';resp.style.fontStyle='italic';
+  resp.textContent='Analysing...';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:`You are the institutional intelligence system for Masters' Union Founder's Office. You have access to real institutional health data.
+
+Current metrics:
+- Institutional Health Score: 61/100 (Under Pressure)
+- Evidence Credibility Score: 41/100. Placement data audited by Brickworks. Alumni career trajectory (36-month median ₹44L+, 80% promoted) is self-reported and unverified. Recruiter NPS not collected.
+- Recruiter Health Score: 6.8/10. 38 active, 24 at risk, 19 cold. 55 new added this cycle — signals churn not growth. 12 consistent across 3+ years.
+- Career Trajectory Index: 1.48x fees at 36 months. Target 1.5x. 2021 cohort: 80% promoted by year 3, 125+ alumni earning ₹40-60L, 80 entrepreneurs. Data self-reported.
+- Founder Dependency Score: 58%. Target below 20%. Pratham personally managing placement crises. Also running Tetr College internationally.
+- 2025 batch: 234 students, 60% placed, 94 unplaced. Median CTC ₹27.8L vs mean ₹33.4L.
+- Fees: ₹29L. Not AICTE approved. University status LoI received Jan 2026.
+
+Respond in 3-5 short paragraphs. Be direct, specific, and name real numbers. No filler. Write like a sharp analyst, not a consultant.`,
+        messages:[{role:'user',content:q}]
+      })
+    });
+    const data=await res.json();
+    resp.style.color='var(--paper2)';resp.style.fontStyle='normal';
+    resp.textContent=data.content?.[0]?.text||'No response.';
+  }catch(e){
+    resp.style.color='var(--red)';resp.style.fontStyle='normal';
+    resp.textContent='Connection error. Check API access.';
+  }
+  btn.disabled=false;btn.textContent='Run';
+}
+
+function qa(q){
+  document.getElementById('ai-input').value=q;
+  ask();
+}
+
+// Resize sparklines on load
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    Object.entries(sparks).forEach(([id,cfg])=>drawSpark(id,cfg.data,cfg.color,true));
+  },100);
+});
+</script>
+</body>
+</html>
